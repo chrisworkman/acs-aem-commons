@@ -309,7 +309,7 @@ public final class SiteMapServlet extends SlingSafeMethodsServlet {
         if (includeLastModified) {
             Calendar cal = page.getLastModified();
             if (cal != null) {
-                writeElement(stream, "lastmod", DATETIME_FORMAT.format(cal));
+                writeElement(stream, "lastmod", DATETIME_FORMAT.format(cal.getTime()));
             }
         }
 
