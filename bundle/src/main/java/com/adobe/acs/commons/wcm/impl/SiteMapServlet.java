@@ -21,6 +21,7 @@ import com.adobe.acs.commons.util.ParameterUtil;
 
 import java.io.IOException;
 import java.net.URI;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -78,6 +79,7 @@ public final class SiteMapServlet extends SlingSafeMethodsServlet {
     private static final Logger log = LoggerFactory.getLogger(SiteMapServlet.class);
 
     private static final FastDateFormat DATE_FORMAT = FastDateFormat.getInstance("yyyy-MM-dd");
+    private static final SimpleDateFormat DATETIME_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX");
 
     private static final boolean DEFAULT_INCLUDE_LAST_MODIFIED = false;
 
@@ -307,7 +309,7 @@ public final class SiteMapServlet extends SlingSafeMethodsServlet {
         if (includeLastModified) {
             Calendar cal = page.getLastModified();
             if (cal != null) {
-                writeElement(stream, "lastmod", DATE_FORMAT.format(cal));
+                writeElement(stream, "lastmod", DATETIME_FORMAT.format(cal));
             }
         }
 
@@ -363,7 +365,7 @@ public final class SiteMapServlet extends SlingSafeMethodsServlet {
         if (includeLastModified) {
             long lastModified = asset.getLastModified();
             if (lastModified > 0) {
-                writeElement(stream, "lastmod", DATE_FORMAT.format(lastModified));
+                writeElement(stream, "lastmod", DATETIME_FORMAT.format(lastModified));
             }
         }
 
