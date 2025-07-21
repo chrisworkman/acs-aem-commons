@@ -74,6 +74,7 @@ import com.day.cq.wcm.api.PageManager;
         @Property(name = "sling.servlet.extensions", value = "xml", propertyPrivate = true),
         @Property(name = "sling.servlet.methods", value = "GET", propertyPrivate = true),
         @Property(name = "webconsole.configurationFactory.nameHint", value = "Site Map for: {externalizer.domain}, on resource types: [{sling.servlet.resourceTypes}]") })
+
 public final class SiteMapServlet extends SlingSafeMethodsServlet {
 
     private static final Logger log = LoggerFactory.getLogger(SiteMapServlet.class);
@@ -82,6 +83,8 @@ public final class SiteMapServlet extends SlingSafeMethodsServlet {
     private static final SimpleDateFormat DATETIME_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX");
 
     private static final boolean DEFAULT_INCLUDE_LAST_MODIFIED = false;
+
+    private static final String DEFAULT_LAST_MODIFIED_PROPERTY = "gcLastPublished";
 
     private static final boolean DEFAULT_INCLUDE_INHERITANCE_VALUE = false;
 
@@ -98,6 +101,9 @@ public final class SiteMapServlet extends SlingSafeMethodsServlet {
 
     @Property(boolValue = DEFAULT_INCLUDE_LAST_MODIFIED, label = "Include Last Modified", description = "If true, the last modified value will be included in the sitemap.")
     private static final String PROP_INCLUDE_LAST_MODIFIED = "include.lastmod";
+
+    @Property(label = "Last Modified Property", description = "The JCR property name which will contain the Last Modified date to use in lastmod. Default: gcLastPublished")
+    private static final String PROP_LAST_MODIFIED_PROPERTY = "gcLastPublished";
 
     @Property(label = "Change Frequency Properties", unbounded = PropertyUnbounded.ARRAY, description = "The set of JCR property names which will contain the change frequency value.")
     private static final String PROP_CHANGE_FREQUENCY_PROPERTIES = "changefreq.properties";
@@ -146,6 +152,8 @@ public final class SiteMapServlet extends SlingSafeMethodsServlet {
 
     private boolean includeLastModified;
 
+    private String lastModifiedProperty;
+
     private String[] changefreqProperties;
 
     private String[] priorityProperties;
@@ -174,6 +182,8 @@ public final class SiteMapServlet extends SlingSafeMethodsServlet {
                 DEFAULT_EXTERNALIZER_DOMAIN);
         this.includeLastModified = PropertiesUtil.toBoolean(properties.get(PROP_INCLUDE_LAST_MODIFIED),
                 DEFAULT_INCLUDE_LAST_MODIFIED);
+        this.lastModifiedProperty = PropertiesUtil.toString(properties.get(PROP_LAST_MODIFIED_PROPERTY),
+                DEFAULT_LAST_MODIFIED_PROPERTY);
         this.includeInheritValue = PropertiesUtil.toBoolean(properties.get(PROP_INCLUDE_INHERITANCE_VALUE),
                 DEFAULT_INCLUDE_INHERITANCE_VALUE);
         this.changefreqProperties = PropertiesUtil.toStringArray(properties.get(PROP_CHANGE_FREQUENCY_PROPERTIES),
@@ -307,7 +317,11 @@ public final class SiteMapServlet extends SlingSafeMethodsServlet {
         writeElement(stream, "loc", loc);
 
         if (includeLastModified) {
-            Calendar cal = page.getLastModified();
+            Calendar cal = page.getProperties().get(this.lastModifiedProperty, Calendar.class);
+            if (cal != null) {
+                cal = page.getLastModified();
+            }
+
             if (cal != null) {
                 writeElement(stream, "lastmod", DATETIME_FORMAT.format(cal.getTime()));
             }
