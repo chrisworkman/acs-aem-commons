@@ -318,14 +318,11 @@ public final class SiteMapServlet extends SlingSafeMethodsServlet {
 
         if (includeLastModified) {
             Calendar cal = page.getProperties().get(this.lastModifiedProperty, Calendar.class);
-            log.warn("### LASTMOD: Adding lastmod value. Value from {}: {}", this.lastModifiedProperty, cal);
             if (cal == null) {
-                log.warn("### LASTMOD: {} is null. Using lastModified date", this.lastModifiedProperty);
                 cal = page.getLastModified();
             }
 
             if (cal != null) {
-                log.warn("### LASTMOD: Adding lastmod value: {}", cal);
                 writeElement(stream, "lastmod", DATETIME_FORMAT.format(cal.getTime()));
             }
         }
