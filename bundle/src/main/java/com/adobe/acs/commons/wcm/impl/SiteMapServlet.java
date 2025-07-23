@@ -102,8 +102,8 @@ public final class SiteMapServlet extends SlingSafeMethodsServlet {
     @Property(boolValue = DEFAULT_INCLUDE_LAST_MODIFIED, label = "Include Last Modified", description = "If true, the last modified value will be included in the sitemap.")
     private static final String PROP_INCLUDE_LAST_MODIFIED = "include.lastmod";
 
-    @Property(label = "Last Modified Property", description = "The JCR property name which will contain the Last Modified date to use in lastmod. Default: gcLastPublished")
-    private static final String PROP_LAST_MODIFIED_PROPERTY = "gcLastPublished";
+    @Property(value = DEFAULT_LAST_MODIFIED_PROPERTY, label = "Last Modified Property", description = "The JCR property name which will contain the Last Modified date to use in lastmod. Default: gcLastPublished")
+    private static final String PROP_LAST_MODIFIED_PROPERTY = "pageproperty.lastmod";
 
     @Property(label = "Change Frequency Properties", unbounded = PropertyUnbounded.ARRAY, description = "The set of JCR property names which will contain the change frequency value.")
     private static final String PROP_CHANGE_FREQUENCY_PROPERTIES = "changefreq.properties";
@@ -318,11 +318,14 @@ public final class SiteMapServlet extends SlingSafeMethodsServlet {
 
         if (includeLastModified) {
             Calendar cal = page.getProperties().get(this.lastModifiedProperty, Calendar.class);
-            if (cal != null) {
+            log.warn("### LASTMOD: Adding lastmod value. Value from {}: {}", this.lastModifiedProperty, cal);
+            if (cal == null) {
+                log.warn("### LASTMOD: {} is null. Using lastModified date", this.lastModifiedProperty);
                 cal = page.getLastModified();
             }
 
             if (cal != null) {
+                log.warn("### LASTMOD: Adding lastmod value: {}", cal);
                 writeElement(stream, "lastmod", DATETIME_FORMAT.format(cal.getTime()));
             }
         }
