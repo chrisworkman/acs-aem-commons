@@ -80,7 +80,6 @@ public final class SiteMapServlet extends SlingSafeMethodsServlet {
     private static final Logger log = LoggerFactory.getLogger(SiteMapServlet.class);
 
     private static final FastDateFormat DATE_FORMAT = FastDateFormat.getInstance("yyyy-MM-dd");
-    private static final SimpleDateFormat DATETIME_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX");
 
     private static final boolean DEFAULT_INCLUDE_LAST_MODIFIED = false;
 
@@ -317,13 +316,27 @@ public final class SiteMapServlet extends SlingSafeMethodsServlet {
         writeElement(stream, "loc", loc);
 
         if (includeLastModified) {
-            Calendar cal = page.getProperties().get(this.lastModifiedProperty, Calendar.class);
-            if (cal == null) {
-                cal = page.getLastModified();
+//            MWS-4711: This section can be uncommented and used instead to force a specific format. This should be
+//            threadsafe.
+//            SimpleDateFormat dateTimeFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX");
+//            Calendar cal = page.getProperties().get(this.lastModifiedProperty, Calendar.class);
+//            if (cal == null) {
+//                cal = page.getLastModified();
+//            }
+//
+//            if (cal != null) {
+//                writeElement(stream, "lastmod", dateTimeFormat.format(cal.getTime()));
+//            }
+//            MWS-4711: Get value of the property as a String, using the default format which is ISO compliant
+            String lastModDate = page.getProperties().get(this.lastModifiedProperty, String.class);
+
+            // Fall back to lastModified property if custom property did not contain a value
+            if (StringUtils.isEmpty(lastModDate)) {
+                lastModDate = page.getProperties().get(JcrConstants.JCR_LASTMODIFIED, String.class);
             }
 
-            if (cal != null) {
-                writeElement(stream, "lastmod", DATETIME_FORMAT.format(cal.getTime()));
+            if (StringUtils.isNotEmpty(lastModDate)) {
+                writeElement(stream, "lastmod", lastModDate);
             }
         }
 
@@ -377,9 +390,11 @@ public final class SiteMapServlet extends SlingSafeMethodsServlet {
         writeElement(stream, "loc", loc);
 
         if (includeLastModified) {
+//            MWS-4711: Define format here to make it more threadsafe. This will be used for assets only.
+            SimpleDateFormat dateTimeFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX");
             long lastModified = asset.getLastModified();
             if (lastModified > 0) {
-                writeElement(stream, "lastmod", DATETIME_FORMAT.format(lastModified));
+                writeElement(stream, "lastmod", dateTimeFormat.format(lastModified));
             }
         }
 
